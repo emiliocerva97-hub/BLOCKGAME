@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>BLOCKGAME Arcade Neon</title>
+  <style>
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --accent: #fff;
+      --btn-bg: #222;
+      --btn-active: #444;
+      --btn-size: 68px;
+      --btn-radius: 50%;
+      --top-btn-size: 38px;
+    }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #google-ads {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 58px;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      border-bottom: 2px solid #222;
+      box-shadow: 0 2px 8px #000a;
+      min-height: 48px;
+    }
+    .game-area {
+      flex: 1 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-top: 70px;
+    }
+    .info-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    .board-wrap {
+      background: #111;
+      border: 2px solid var(--fg);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 0 12px #444a;
+      margin-bottom: 4px;
+      position: relative;
+    }
+    #board {
+      background: #000;
+      display: block;
+      width: 260px;
+      height: 520px;
+      border-radius: 6px;
+      box-shadow: 0 2px 14px #000a inset;
+      image-rendering: pixelated;
+      touch-action: none;
+    }
+    .controls-bottom {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(20, 20, 20, 0.97);
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      padding: 16px 0 20px 0;
+      z-index: 10;
+      gap: 30px;
+      min-height: 110px;
+      box-shadow: 0 -4px 16px #222a;
+    }
+    .arcade-btn {
+      width: var(--btn-size);
+      height: var(--btn-size);
+      border-radius: var(--btn-radius);
+      background: var(--btn-bg);
+      color: var(--accent);
+      border: 2px solid #fff;
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 0 8px;
+      box-shadow: 0 3px 16px #0007;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .arcade-btn:active {
+      background: var(--btn-active);
+      color: #eee;
+      border-color: #ffd700;
+      animation: btnTap 0.13s;
+    }
+    @keyframes btnTap {
+      0% { transform: scale(1.1);}
+      100% { transform: scale(1);}
+    }
+    .top-btns {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 8px;
+      z-index: 11;
+    }
+    .top-btn {
+      width: var(--top-btn-size);
+      height: var(--top-btn-size);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.11);
+      color: var(--fg);
+      border: 1px solid #fff;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.86;
+      transition: background 0.18s, color 0.18s;
+      box-shadow: 0 2px 8px #0008;
+      user-select: none;
+    }
+    .top-btn:active {
+      background: #fff;
+      color: #222;
+      border-color: #ffd700;
+    }
+    /* Modo NEON activado */
+    body.neon-mode {
+      --bg: #03001a;
+      --fg: #00ffe7;
+      --accent: #ff00cc;
+      --btn-bg: #1a002f;
+      --btn-active: #23003e;
+    }
+    body.neon-mode .arcade-btn {
+      box-shadow:
+        0 0 18px #00ffe7,
+        0 0 24px #ff00cc inset;
+      border-color: #00ffe7;
+      color: #ff00cc;
+      background: #090026;
+      text-shadow: 0 0 12px #ff00cc;
+    }
+    body.neon-mode .top-btn {
+      background: #00ffe755;
+      color: #ff00cc;
+      border-color: #ff00cc;
+      text-shadow: 0 0 8px #00ffe7;
+    }
+    body.neon-mode .board-wrap {
+      box-shadow: 0 0 32px #00ffe7a0;
+      border-color: #ff00cc;
+    }
+    /* Blanco y negro: más sobrio */
+    body.bn-mode {
+      --bg: #000;
+      --fg: #fff;
+      --accent: #fff;
+      --btn-bg: #222;
+      --btn-active: #444;
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      #board {
+        width: 98vw;
+        height: 50vw;
+        max-width: 340px;
+        max-height: 480px;
+      }
+      .arcade-btn {
+        width: 54px;
+        height: 54px;
+        font-size: 1.45rem;
+      }
+      .controls-bottom {
+        gap: 16px;
+        min-height: 74px;
+        padding-bottom: 10px;
+      }
+      .top-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+      }
+      #google-ads { min-height: 38px; height: 38px;}
+    }
+    /* Menú de configuración */
+    .config-menu {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.94);
+      color: #fff;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .config-card {
+      background: #222;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px #000a;
+      padding: 28px 24px;
+      min-width: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+    .config-card h2 {
+      margin:0 0 20px 0;
+      font-size: 1.5rem;
+    }
+    .config-card label { font-size: 1rem;}
+    .config-card select, .config-card button {
+      font-size: 1.1rem;
+      padding: 9px 16px;
+      border-radius: 7px;
+      border: 1px solid #888;
+      background: #111;
+      color: #fff;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+    .config-card button { background: #00ffe7; color: #222; border: none; font-weight: bold;}
+    .config-card button:active { background: #ff00cc; color: #fff;}
+  </style>
+</head>
+<body class="bn-mode">
+  <!-- Banner de Google Ads (placeholder, no activo) -->
+  <div id="google-ads">
+    <span style="color:#888; font-size:0.95rem;">Banner Ads Aquí</span>
+  </div>
+  <!-- Menú de configuración (oculto al iniciar) -->
+  <div class="config-menu" id="configMenu" style="display:none;">
+    <div class="config-card">
+      <h2>Configuración</h2>
+      <label for="visualMode">Modo Visual:</label>
+      <select id="visualMode">
+        <option value="bn">Blanco y Negro</option>
+        <option value="neon">Neón</option>
+      </select>
+      <label for="languageSel">Idioma:</label>
+      <select id="languageSel">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+        <option value="pt">Português</option>
+      </select>
+      <label for="controlMode">Modo de Control:</label>
+      <select id="controlMode">
+        <option value="buttons">Botones</option>
+        <option value="gestures">Gestos</option>
+      </select>
+      <button id="closeConfigBtn">Guardar y cerrar</button>
+    </div>
+  </div>
+  <!-- Área de juego -->
+  <div class="game-area">
+    <div class="info-bar">
+      <span>Puntaje: <span id="score">0</span></span>
+      <span>Nivel: <span id="level">1</span></span>
+      <span>Líneas: <span id="lines">0</span></span>
+      <button class="top-btn" id="openConfigBtn" title="Configuración">⚙️</button>
+    </div>
+    <div class="board-wrap">
+      <canvas id="board" width="260" height="520"></canvas>
+      <div class="top-btns">
+        <button class="top-btn" id="pauseBtn" aria-label="Pausa">⏸</button>
+        <button class="top-btn" id="restartBtn" aria-label="Reiniciar">↺</button>
+      </div>
+    </div>
+  </div>
+  <!-- Controles arcade -->
+  <div class="controls-bottom" id="arcadeControls">
+    <button class="arcade-btn" id="leftBtn" aria-label="Izquierda">◀︎</button>
+    <button class="arcade-btn" id="downBtn" aria-label="Abajo">⬇︎</button>
+    <button class="arcade-btn" id="rotBtn" aria-label="Rotar">⟳</button>
+    <button class="arcade-btn" id="rightBtn" aria-label="Derecha">▶︎</button>
+  </div>
+  <script>
+    // Configuración de visualización
+    const configMenu = document.getElementById('configMenu');
+    const openConfigBtn = document.getElementById('openConfigBtn');
+    const closeConfigBtn = document.getElementById('closeConfigBtn');
+    const visualModeSel = document.getElementById('visualMode');
+    let visualMode = "bn";
+
+    openConfigBtn.onclick = () => {
+      configMenu.style.display = "flex";
+    };
+    closeConfigBtn.onclick = () => {
+      configMenu.style.display = "none";
+      if (visualModeSel.value === "neon") {
+        document.body.classList.remove("bn-mode");
+        document.body.classList.add("neon-mode");
+      } else {
+        document.body.classList.remove("neon-mode");
+        document.body.classList.add("bn-mode");
+      }
+      // Guardar modo visual
+      visualMode = visualModeSel.value;
+      // Aquí puedes guardar en localStorage si quieres
+    };
+
+    // Controles arcade (placeholder)
+    document.getElementById('leftBtn').onclick = () => { /* mover a la izq */ };
+    document.getElementById('rightBtn').onclick = () => { /* mover a la der */ };
+    document.getElementById('downBtn').onclick = () => { /* bajar rápido */ };
+    document.getElementById('rotBtn').onclick = () => { /* rotar pieza */ };
+    document.getElementById('pauseBtn').onclick = () => { /* pausar juego */ };
+    document.getElementById('restartBtn').onclick = () => {
+      if (confirm('¿Seguro que quieres reiniciar la partida?')) {
+        /* reiniciar juego */
+      }
+    };
+
+    // Mostrar/ocultar controles arcade según modo
+    const arcadeControls = document.getElementById('arcadeControls');
+    const controlModeSel = document.getElementById('controlMode');
+    controlModeSel.onchange = () => {
+      if (controlModeSel.value === "buttons") {
+        arcadeControls.style.display = "flex";
+        // desactiva gestos táctiles
+      } else {
+        arcadeControls.style.display = "none";
+        // activa gestos táctiles
+        setupGestures();
+      }
+    };
+    function setupGestures() {
+      // Ejemplo básico: Swipe para mover, tap para rotar
+      let startX, startY;
+      const board = document.getElementById("board");
+      board.ontouchstart = function(e) {
+        if (e.touches.length === 1) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+        }
+      };
+      board.ontouchend = function(e) {
+        if (!startX || !startY) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 40) { /* mover derecha */ }
+          else if (dx < -40) { /* mover izquierda */ }
+        } else {
+          if (dy > 40) { /* bajar rápido */ }
+          else if (dy < -40) { /* rotar pieza */ }
+        }
+        startX = startY = null;
+      };
+    }
+    // Inicializa el modo visual y controles
+    visualModeSel.value = "bn";
+    controlModeSel.value = "buttons";
+    arcadeControls.style.display = "flex";
+  </script>
+</body>
+</html>
